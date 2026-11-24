@@ -1,0 +1,15 @@
+﻿@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "Грешка";
+}
+
+<div class="empty">
+    <p class="empty-title">Възникна неочаквана грешка.</p>
+    <p class="muted">Опитайте отново. Ако проблемът продължава, съобщете кода по-долу.</p>
+    @if (Model.ShowRequestId)
+    {
+        <p><code>@Model.RequestId</code></p>
+    }
+    <a class="btn btn-primary" asp-page="/Index">Към началото</a>
+</div>
