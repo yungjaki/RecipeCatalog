@@ -1,0 +1,9 @@
+@page "{id:int}"
+@model EditModel
+@{
+    ViewData["Title"] = "Редакция на " + Model.Form.Name;
+}
+
+<a class="back" asp-page="/Recipes/Details" asp-route-id="@Model.Id">← Обратно към рецептата</a>
+<h1 class="page-title">Редакция на рецепта</h1>
+<partial name="_RecipeForm" model="Model" />
