@@ -1,0 +1,62 @@
+@page "{id:int}"
+@model DetailsModel
+@{
+    var recipe = Model.Recipe;
+    ViewData["Title"] = recipe.Name;
+}
+
+<a class="back" asp-page="/Index">← Към всички рецепти</a>
+
+<article class="recipe">
+    <div class="recipe-media">
+        <img src="@(string.IsNullOrEmpty(recipe.ImagePath) ? "/images/placeholder.svg" : recipe.ImagePath)" alt="@recipe.Name" width="800" height="600" />
+    </div>
+
+    <div class="recipe-head">
+        <span class="tag">@recipe.CategoryName</span>
+        <h1>@recipe.Name</h1>
+        <div class="recipe-facts">
+            <partial name="_Stars" model="(recipe.AverageRating, recipe.RatingCount)" />
+            <span class="time">⏱ @recipe.PrepTimeMinutes мин</span>
+            <span class="muted">@recipe.Ingredients.Count продукта</span>
+        </div>
+
+        <form method="post" asp-page-handler="Rate" asp-route-id="@recipe.Id" class="rate">
+            <span class="rate-label">Вашата оценка:</span>
+            <div class="rate-stars">
+                @for (var s = 5; s >= 1; s--)
+                {
+                    <input type="radio" id="star-@s" name="stars" value="@s" required />
+                    <label for="star-@s" title="@s звезди">★</label>
+                }
+            </div>
+            <button class="btn btn-sm" type="submit">Оцени</button>
+        </form>
+
+        <div class="actions">
+            <a class="btn btn-sm" asp-page="/Recipes/Edit" asp-route-id="@recipe.Id">Редактирай</a>
+            <form method="post" asp-page-handler="Delete" asp-route-id="@recipe.Id"
+                  data-confirm="Сигурни ли сте, че искате да изтриете „@recipe.Name“?">
+                <button class="btn btn-sm btn-danger" type="submit">Изтрий</button>
+            </form>
+        </div>
+    </div>
+
+    <section class="recipe-ingredients">
+        <h2>Необходими продукти</h2>
+        <ul class="ingredients">
+            @foreach (var ingredient in recipe.Ingredients)
+            {
+                <li>
+                    <span>@ingredient.Name</span>
+                    <span class="qty">@ingredient.Quantity</span>
+                </li>
+            }
+        </ul>
+    </section>
+
+    <section class="recipe-steps">
+        <h2>Начин на приготвяне</h2>
+        <p class="instructions">@recipe.Instructions</p>
+    </section>
+</article>

@@ -1,0 +1,60 @@
+@model RecipeCatalog.Web.Pages.Recipes.RecipeFormModel
+
+<form method="post" enctype="multipart/form-data" class="form" novalidate>
+    <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+    <input type="hidden" asp-for="Form.ExistingImagePath" />
+
+    <div class="field">
+        <label asp-for="Form.Name">Име на рецептата</label>
+        <input asp-for="Form.Name" maxlength="100" placeholder="напр. Шопска салата" />
+        <span asp-validation-for="Form.Name" class="field-error"></span>
+    </div>
+
+    <div class="field-row">
+        <div class="field">
+            <label asp-for="Form.CategoryId">Категория</label>
+            <select asp-for="Form.CategoryId">
+                <option value="0">— изберете —</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            </select>
+            <span asp-validation-for="Form.CategoryId" class="field-error"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Form.PrepTimeMinutes">Време за приготвяне (мин)</label>
+            <input asp-for="Form.PrepTimeMinutes" type="number" min="1" max="1440" />
+            <span asp-validation-for="Form.PrepTimeMinutes" class="field-error"></span>
+        </div>
+    </div>
+
+    <div class="field">
+        <label asp-for="Form.IngredientsText">Продукти</label>
+        <textarea asp-for="Form.IngredientsText" rows="7" placeholder="По един продукт на ред, напр.&#10;Домати - 4 бр.&#10;Сирене - 200 г"></textarea>
+        <small class="hint">По един на ред във формат „Продукт - количество“. Количеството не е задължително.</small>
+        <span asp-validation-for="Form.IngredientsText" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label asp-for="Form.Instructions">Начин на приготвяне</label>
+        <textarea asp-for="Form.Instructions" rows="7" maxlength="5000"></textarea>
+        <span asp-validation-for="Form.Instructions" class="field-error"></span>
+    </div>
+
+    <div class="field">
+        <label asp-for="Image">Снимка</label>
+        @if (!string.IsNullOrEmpty(Model.Form.ExistingImagePath))
+        {
+            <img class="thumb" src="@Model.Form.ExistingImagePath" alt="Текущо изображение" />
+        }
+        <input asp-for="Image" type="file" accept=".jpg,.jpeg,.png,.webp" />
+        <small class="hint">JPG, PNG или WEBP до 2 MB. Ако не изберете снимка, се използва изображение по подразбиране.</small>
+        <span asp-validation-for="Image" class="field-error"></span>
+    </div>
+
+    <div class="form-actions">
+        <button class="btn btn-primary" type="submit">Запази</button>
+        <a class="btn" asp-page="/Index">Отказ</a>
+    </div>
+</form>

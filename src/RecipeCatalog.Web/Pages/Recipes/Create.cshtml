@@ -1,0 +1,9 @@
+@page
+@model CreateModel
+@{
+    ViewData["Title"] = "Нова рецепта";
+}
+
+<a class="back" asp-page="/Index">← Към всички рецепти</a>
+<h1 class="page-title">Нова рецепта</h1>
+<partial name="_RecipeForm" model="Model" />
