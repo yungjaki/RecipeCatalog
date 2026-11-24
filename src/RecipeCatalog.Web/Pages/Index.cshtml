@@ -1,0 +1,114 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Рецепти";
+    var result = Model.Result!.Result;
+    var placeholder = Model.Mode == SearchMode.Ingredient
+        ? "Продукти, разделени със запетая: домати, сирене"
+        : "Търсете рецепта или продукт…";
+}
+
+<section class="hero">
+    <h1>Какво ще готвим днес?</h1>
+    <p class="lead">Търсете по име на рецепта или по продуктите, които имате в хладилника.</p>
+
+    <form method="get" class="search" role="search" id="search-form">
+        <div class="search-bar">
+            <label class="visually-hidden" for="q">Търсене</label>
+            <input id="q" name="q" type="search" value="@Model.Query" maxlength="@IndexModel.MaxQueryLength"
+                   placeholder="@placeholder" autocomplete="off" />
+            <button class="btn btn-primary" type="submit">Търси</button>
+        </div>
+
+        <fieldset class="segmented" aria-label="Търсене в">
+            <input type="radio" id="mode-any" name="mode" value="Any" checked="@(Model.Mode == SearchMode.Any)" />
+            <label for="mode-any">Навсякъде</label>
+            <input type="radio" id="mode-name" name="mode" value="Name" checked="@(Model.Mode == SearchMode.Name)" />
+            <label for="mode-name">По име</label>
+            <input type="radio" id="mode-ingr" name="mode" value="Ingredient" checked="@(Model.Mode == SearchMode.Ingredient)" />
+            <label for="mode-ingr">По съставка</label>
+        </fieldset>
+
+        <div class="filters">
+            @if (Model.CategoryId is > 0)
+            {
+                <input type="hidden" name="cat" value="@Model.CategoryId" />
+            }
+            <label>Минимален рейтинг
+                <select name="rating" data-autosubmit>
+                    <option value="">Всички</option>
+                    @for (var r = 5; r >= 1; r--)
+                    {
+                        <option value="@r" selected="@(Model.MinRating == r)">@r★ и нагоре</option>
+                    }
+                </select>
+            </label>
+            <label>Подредба
+                <select name="sort" data-autosubmit>
+                    <option value="Name" selected="@(Model.Sort == SortOrder.Name)">По азбучен ред</option>
+                    <option value="RatingDesc" selected="@(Model.Sort == SortOrder.RatingDesc)">Най-висок рейтинг</option>
+                    <option value="PrepTimeAsc" selected="@(Model.Sort == SortOrder.PrepTimeAsc)">Най-бързи</option>
+                    <option value="Newest" selected="@(Model.Sort == SortOrder.Newest)">Най-нови</option>
+                </select>
+            </label>
+        </div>
+    </form>
+</section>
+
+<nav class="chips" aria-label="Категории">
+    <a class="chip @(Model.CategoryId is null or <= 0 ? "active" : "")" asp-page="/Index" asp-all-route-data="Model.RouteWith(category: null)">Всички</a>
+    @foreach (var category in Model.Categories)
+    {
+        <a class="chip @(Model.CategoryId == category.Id ? "active" : "")" asp-page="/Index"
+           asp-all-route-data="Model.RouteWith(category: category.Id)">@category.Name</a>
+    }
+</nav>
+
+<p class="result-meta">
+    Намерени <strong>@result.TotalCount</strong> @(result.TotalCount == 1 ? "рецепта" : "рецепти")
+    <span class="muted">· обработено за @Model.Result.ElapsedMilliseconds.ToString("0.0") ms</span>
+    @if (Model.HasFilters)
+    {
+        <a class="link-reset" asp-page="/Index">Изчисти филтрите</a>
+    }
+</p>
+
+@if (result.Items.Count == 0)
+{
+    <div class="empty">
+        <p class="empty-title">Няма рецепти, отговарящи на търсенето.</p>
+        <p class="muted">Опитайте с друг продукт, по-кратка дума или премахнете филтъра за рейтинг.</p>
+    </div>
+}
+else
+{
+    <ul class="grid">
+        @foreach (var recipe in result.Items)
+        {
+            <li class="card">
+                <a asp-page="/Recipes/Details" asp-route-id="@recipe.Id" class="card-link">
+                    <img src="@(string.IsNullOrEmpty(recipe.ImagePath) ? "/images/placeholder.svg" : recipe.ImagePath)"
+                         alt="@recipe.Name" loading="lazy" width="400" height="300" />
+                    <div class="card-body">
+                        <span class="tag">@recipe.CategoryName</span>
+                        <h2 class="card-title">@recipe.Name</h2>
+                        <div class="card-foot">
+                            <partial name="_Stars" model="(recipe.AverageRating, recipe.RatingCount)" />
+                            <span class="time">⏱ @recipe.PrepTimeMinutes мин</span>
+                        </div>
+                    </div>
+                </a>
+            </li>
+        }
+    </ul>
+
+    @if (result.TotalPages > 1)
+    {
+        <nav class="pager" aria-label="Страници">
+            @for (var p = 1; p <= result.TotalPages; p++)
+            {
+                <a class="@(p == result.Page ? "active" : "")" asp-page="/Index" asp-all-route-data="Model.RouteWith(page: p)">@p</a>
+            }
+        </nav>
+    }
+}
